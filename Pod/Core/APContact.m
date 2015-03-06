@@ -100,6 +100,23 @@
         {
             _note = [self stringProperty:kABPersonNoteProperty fromRecord:recordRef];
         }
+        if (fieldMask & APContactFieldLinkedRecordIDs)
+        {
+            NSMutableArray *linkedRecordIDs = [NSMutableArray array];
+
+            CFArrayRef linkedPeopleRef = ABPersonCopyArrayOfAllLinkedPeople(recordRef);
+            for (CFIndex i = 0; i < CFArrayGetCount(linkedPeopleRef); i++)
+            {
+                ABRecordRef linkedRecordRef = CFArrayGetValueAtIndex(linkedPeopleRef, i);
+                [linkedRecordIDs addObject:@(ABRecordGetRecordID(linkedRecordRef))];
+            }
+
+            // ABPersonCopyArrayOfAllLinkedPeople() includes the recordRef.
+            [linkedRecordIDs removeObject:[NSNumber numberWithInteger:ABRecordGetRecordID(recordRef)]];
+
+            _linkedRecordIDs = [linkedRecordIDs copy];
+            CFRelease(linkedPeopleRef);
+        }
     }
     return self;
 }
